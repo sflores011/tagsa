@@ -1,3 +1,4 @@
+// lib/wp.ts
 const base = process.env.WP_API_BASE;
 
 type FetchOptions = RequestInit & { next?: { revalidate?: number } };
@@ -11,8 +12,8 @@ function authHeader(): Record<string, string> {
 }
 
 function joinUrl(baseUrl: string, path: string) {
-    const b = baseUrl.replace(/\/+$/, ""); // quita slash final
-    const p = path.startsWith("/") ? path : `/${path}`; // asegura slash inicial
+    const b = baseUrl.replace(/\/+$/, "");
+    const p = path.startsWith("/") ? path : `/${path}`;
     return `${b}${p}`;
 }
 
@@ -21,13 +22,17 @@ export async function wpFetch<T>(path: string, options: FetchOptions = {}): Prom
 
     const url = joinUrl(base, path);
 
+    // ✅ Normaliza headers sin unions raros
     const headers = new Headers(options.headers);
     headers.set("Content-Type", "application/json");
 
     const auth = authHeader();
     if (auth.Authorization) headers.set("Authorization", auth.Authorization);
 
-    const res = await fetch(url, { ...options, headers });
+    const res = await fetch(url, {
+        ...options,
+        headers,
+    });
 
     if (!res.ok) {
         const text = await res.text().catch(() => "");

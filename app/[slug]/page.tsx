@@ -1,4 +1,7 @@
-import { wpFetch } from "@/lib/wp";
+import { wpV2 } from "@/lib/wp";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type WPPost = {
     id: number;
@@ -7,16 +10,14 @@ type WPPost = {
     excerpt?: { rendered?: string };
 };
 
-export const dynamic = "force-dynamic"; // 👈 evita prerender en build si WP falla
-
 export default async function Home() {
-    const posts = await wpFetch<WPPost[]>(`/posts?per_page=10`);
+    const posts = await wpV2<WPPost[]>(`/posts?per_page=10`);
 
     return (
         <main style={{ padding: 24 }}>
             <h1>Blog</h1>
 
-            {(!posts || posts.length === 0) ? (
+            {!posts || posts.length === 0 ? (
                 <p>No hay posts publicados todavía.</p>
             ) : (
                 <ul>

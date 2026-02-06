@@ -1,15 +1,7 @@
 // lib/wp.ts
-const base = process.env.WP_API_BASE;
+const site = process.env.WP_SITE_URL;
 
 type FetchOptions = RequestInit & { next?: { revalidate?: number } };
-
-function authHeader(): Record<string, string> {
-    const u = process.env.WP_USERNAME;
-    const p = process.env.WP_APP_PASSWORD;
-    if (!u || !p) return {};
-    const token = Buffer.from(`${u}:${p}`).toString("base64");
-    return { Authorization: `Basic ${token}` };
-}
 
 function joinUrl(baseUrl: string, path: string) {
     const b = baseUrl.replace(/\/+$/, "");
@@ -17,27 +9,30 @@ function joinUrl(baseUrl: string, path: string) {
     return `${b}${p}`;
 }
 
-export async function wpFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
-    if (!base) throw new Error("Missing env WP_API_BASE");
-
-    const url = joinUrl(base, path);
-
-    // ✅ Normaliza headers sin unions raros
+async function fetchJson<T>(url: string, options: FetchOptions = {}): Promise<T> {
     const headers = new Headers(options.headers);
     headers.set("Content-Type", "application/json");
 
-    const auth = authHeader();
-    if (auth.Authorization) headers.set("Authorization", auth.Authorization);
-
-    const res = await fetch(url, {
-        ...options,
-        headers,
-    });
+    const res = await fetch(url, { ...options, headers });
 
     if (!res.ok) {
         const text = await res.text().catch(() => "");
-        throw new Error(`WP fetch failed ${res.status} ${res.statusText}: ${text.slice(0, 200)}`);
+        throw new Error(`WP fetch failed ${res.status} ${res.statusText}: ${text.slice(0, 250)}`);
     }
 
     return res.json() as Promise<T>;
+}
+
+// WP core REST (posts/pages estándar)
+export function wpV2<T>(path: string, options: FetchOptions = {}) {
+    if (!site) throw new Error("Missing env WP_SITE_URL");
+    const url = joinUrl(`${site}/wp-json/wp/v2`, path);
+    return fetchJson<T>(url, options);
+}
+
+// Endpoint custom (gutenberg-api)
+export function gutenbergApi<T>(path: string, options: FetchOptions = {}) {
+    if (!site) throw new Error("Missing env WP_SITE_URL");
+    const url = joinUrl(`${site}/wp-json/gutenberg-api/v1`, path);
+    return fetchJson<T>(url, options);
 }

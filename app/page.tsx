@@ -1,4 +1,4 @@
-import { wpFetch } from "@/lib/wp";
+import { wpV2 } from "@/lib/wp";
 
 type WPPost = {
   id: number;
@@ -9,7 +9,7 @@ type WPPost = {
 
 export default async function Home() {
   // revalidate: 60 => ISR cada 60s
-  const posts = await wpFetch<WPPost[]>(`/posts?per_page=10`, { next: { revalidate: 60 } });
+  const posts = await wpV2<WPPost[]>(`/posts?per_page=10`);
 
   return (
     <main style={{ padding: 24 }}>

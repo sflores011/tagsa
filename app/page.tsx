@@ -1,29 +1,144 @@
-import { wpV2 } from "@/lib/wp";
+import Hero from '@/components/home/Hero';
+import ControlTotal from '@/components/home/ControlTotal';
+import WhyChooseUs from '@/components/home/WhyChooseUs';
+import { getHomePageData } from '@/lib/wordpress';
+import { PageData, Block } from '@/types';
 
-type WPPost = {
-  id: number;
-  slug: string;
-  title: { rendered: string };
-  excerpt: { rendered: string };
+// Helper to extract content safely
+const getBlockContent = (blocks: Block[], blockType: string): Block | undefined => {
+  return blocks.find(b => b.type === blockType);
 };
 
 export default async function Home() {
-  // revalidate: 60 => ISR cada 60s
-  const posts = await wpV2<WPPost[]>(`/posts?per_page=10`);
+  const pageData: PageData | null = await getHomePageData();
+
+  if (!pageData) {
+    return (
+      <main className="flex justify-center items-center h-screen">
+        <p className="text-xl">Cargando...</p>
+      </main>
+    );
+  }
+
+  // --- 1. HERO SECTION ---
+  const heroGroup = pageData.gutenberg_structure.find(
+    block => block.type === 'core/group' && block.attributes.metadata?.name === 'Hero'
+  );
+
+  let heroData = {
+    backgroundImageUrl: '',
+    title: '',
+    description: '',
+    buttonText: '',
+    buttonUrl: '',
+    stats: [] as { value: string; label: string }[]
+  };
+
+  if (heroGroup && heroGroup.blocks) {
+    const imageBlock = getBlockContent(heroGroup.blocks, 'core/image');
+    heroData.backgroundImageUrl = imageBlock?.url || '';
+
+    const headingBlock = getBlockContent(heroGroup.blocks, 'core/heading');
+    heroData.title = headingBlock?.content || '';
+
+    const paragraphBlock = getBlockContent(heroGroup.blocks, 'core/paragraph');
+    heroData.description = paragraphBlock?.content || '';
+
+    const buttonsBlock = heroGroup.blocks.find(b => b.type === 'core/buttons');
+    if (buttonsBlock && buttonsBlock.buttons && buttonsBlock.buttons.length > 0) {
+      const btn = buttonsBlock.buttons[0];
+      heroData.buttonText = btn.text || 'Ver más';
+      heroData.buttonUrl = btn.url || '#';
+    }
+
+    const statsColumnsBlock = heroGroup.blocks.find(
+      b => b.type === 'core/columns' && b.attributes.metadata?.name === 'numeros'
+    );
+
+    if (statsColumnsBlock && statsColumnsBlock.columns) {
+      heroData.stats = statsColumnsBlock.columns.map(col => {
+        const valBlock = col.blocks.find(b => b.type === 'core/heading');
+        const labelBlock = col.blocks.find(b => b.type === 'core/paragraph');
+        return {
+          value: valBlock?.content || '',
+          label: labelBlock?.content || ''
+        };
+      });
+    }
+  }
+
+  // --- 2. CONTROL TOTAL SECTION ---
+  const controlGroup = pageData.gutenberg_structure.find(
+    block => block.type === 'core/group' && block.attributes.metadata?.name === 'Control-total'
+  );
+
+  let controlData = {
+    mainTitle: '',
+    mainDescription: '',
+    imageSrc: '',
+    subTitle: '',
+    subDescription: '',
+    buttonText: '',
+    buttonUrl: ''
+  };
+
+  if (controlGroup && controlGroup.blocks) {
+    controlData.mainTitle = getBlockContent(controlGroup.blocks, 'core/heading')?.content || '';
+    controlData.mainDescription = getBlockContent(controlGroup.blocks, 'core/paragraph')?.content || '';
+
+    const columns = controlGroup.blocks.find(b => b.type === 'core/columns');
+    if (columns && columns.columns && columns.columns.length >= 2) {
+      // Left col (Image)
+      const leftCol = columns.columns[0];
+      const imgBlock = getBlockContent(leftCol.blocks, 'core/image');
+      controlData.imageSrc = imgBlock?.url || '';
+
+      // Right col (Content)
+      const rightCol = columns.columns[1];
+      controlData.subTitle = getBlockContent(rightCol.blocks, 'core/heading')?.content || '';
+      controlData.subDescription = getBlockContent(rightCol.blocks, 'core/paragraph')?.content || '';
+
+      const btns = rightCol.blocks.find(b => b.type === 'core/buttons');
+      if (btns && btns.buttons && btns.buttons.length > 0) {
+        controlData.buttonText = btns.buttons[0].text || '';
+        controlData.buttonUrl = btns.buttons[0].url || '#';
+      }
+    }
+  }
+
+  // --- 3. WHY CHOOSE US SECTION ---
+  const chooseGroup = pageData.gutenberg_structure.find(
+    block => block.type === 'core/group' && block.attributes.metadata?.name === 'Elegirnos'
+  );
+
+  let chooseData = {
+    title: '',
+    features: [] as { iconUrl: string; title: string; description: string }[]
+  };
+
+  if (chooseGroup && chooseGroup.blocks) {
+    chooseData.title = getBlockContent(chooseGroup.blocks, 'core/heading')?.content || '';
+
+    // Find all nested groups (satisfaccion, pago, etc)
+    const featureGroups = chooseGroup.blocks.filter(b => b.type === 'core/group');
+
+    chooseData.features = featureGroups.map(grp => {
+      if (!grp.blocks) return { iconUrl: '', title: '', description: '' };
+
+      const icon = getBlockContent(grp.blocks, 'core/image')?.url || '';
+      const title = getBlockContent(grp.blocks, 'core/heading')?.content || '';
+      const desc = getBlockContent(grp.blocks, 'core/paragraph')?.content || '';
+
+      return { iconUrl: icon, title, description: desc };
+    });
+  }
+
 
   return (
-    <main style={{ padding: 24 }}>
-      <h1>Blog</h1>
-      <ul>
-        {posts.map((p) => (
-          <li key={p.id} style={{ marginBottom: 16 }}>
-            <a href={`/post/${p.slug}`}>
-              <strong dangerouslySetInnerHTML={{ __html: p.title.rendered }} />
-            </a>
-            <div dangerouslySetInnerHTML={{ __html: p.excerpt.rendered }} />
-          </li>
-        ))}
-      </ul>
-    </main>
+    <>
+      <Hero {...heroData} />
+      <ControlTotal {...controlData} />
+      <WhyChooseUs {...chooseData} />
+    </>
   );
 }

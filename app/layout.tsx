@@ -26,7 +26,7 @@ export default async function RootLayout({
         className={`${montserrat.variable} antialiased`}
       >
         <Header data={headerData} />
-        <main className="pt-20 min-h-screen">
+        <main className="min-h-screen">
           {children}
         </main>
       </body>

@@ -1,21 +1,44 @@
 export interface WpImage {
-    id: number;
+    id: number | string;
     url: string;
     width: number;
     height: number;
     alt: string;
+    sizes?: {
+        [key: string]: {
+            url: string;
+            width: number;
+            height: number;
+        }
+    };
 }
 
 export interface MenuItem {
-    ID: number;
+    id: number | string;
     title: string;
     url: string;
+    slug?: string;
+    target?: string;
+    description?: string;
+    type?: string;
+    object?: string;
+    object_id?: number | null;
+    has_children?: boolean;
+    featured_image?: any;
     children?: MenuItem[];
 }
 
 export interface HeaderData {
-    logo?: WpImage;
-    main_menu: MenuItem[];
+    site_info: {
+        name: string;
+        description: string;
+        url: string;
+        admin_email: string;
+    };
+    logo: WpImage & { has_logo: boolean };
+    menu: {
+        items: MenuItem[];
+    };
 }
 
 export interface BlockAttributes {

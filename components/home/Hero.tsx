@@ -16,7 +16,7 @@ import Link from 'next/link';
 
 export default function Hero({ backgroundImageUrl, title, description, buttonText, buttonUrl, stats }: HeroProps) {
     return (
-        <section className="relative w-full min-h-[85vh] flex flex-col justify-end overflow-hidden">
+        <section className="relative w-full min-h-screen flex flex-col justify-end overflow-hidden">
             {/* Background Image Container - Covers entire section */}
             {backgroundImageUrl && (
                 <div className="absolute inset-0 z-0">

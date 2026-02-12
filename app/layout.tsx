@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
-import { getHeaderData } from "@/lib/wordpress";
+import Footer from "@/components/layout/Footer";
+import { getHeaderData, getFooterData } from "@/lib/wordpress";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -20,6 +21,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const headerData = await getHeaderData();
+  const footerData = await getFooterData();
+
   return (
     <html lang="en">
       <body
@@ -29,7 +32,9 @@ export default async function RootLayout({
         <main className="min-h-screen">
           {children}
         </main>
+        <Footer data={footerData} />
       </body>
     </html>
   );
 }
+

@@ -1,10 +1,10 @@
 import Hero from '@/components/home/Hero';
 import ControlTotal from '@/components/home/ControlTotal';
-import WhyChooseUs from '@/components/home/WhyChooseUs';
+import Elegirnos from '@/components/home/Elegirnos';
 import { getHomePageData } from '@/lib/wordpress';
 import { PageData, Block } from '@/types';
 
-// Helper to extract content safely
+// Función auxiliar para extraer contenido de forma segura
 const getBlockContent = (blocks: Block[], blockType: string): Block | undefined => {
   return blocks.find(b => b.type === blockType);
 };
@@ -20,7 +20,7 @@ export default async function Home() {
     );
   }
 
-  // --- 1. HERO SECTION ---
+  // --- 1. SECCIÓN HERO ---
   const heroGroup = pageData.gutenberg_structure.find(
     block => block.type === 'core/group' && block.attributes.metadata?.name === 'Hero'
   );
@@ -67,7 +67,7 @@ export default async function Home() {
     }
   }
 
-  // --- 2. CONTROL TOTAL SECTION ---
+  // --- 2. SECCIÓN CONTROL TOTAL ---
   const controlGroup = pageData.gutenberg_structure.find(
     block => block.type === 'core/group' && block.attributes.metadata?.name === 'Control-total'
   );
@@ -88,12 +88,12 @@ export default async function Home() {
 
     const columns = controlGroup.blocks.find(b => b.type === 'core/columns');
     if (columns && columns.columns && columns.columns.length >= 2) {
-      // Left col (Image)
+      // Columna izquierda (Imagen)
       const leftCol = columns.columns[0];
       const imgBlock = getBlockContent(leftCol.blocks, 'core/image');
       controlData.imageSrc = imgBlock?.url || '';
 
-      // Right col (Content)
+      // Columna derecha (Contenido)
       const rightCol = columns.columns[1];
       controlData.subTitle = getBlockContent(rightCol.blocks, 'core/heading')?.content || '';
       controlData.subDescription = getBlockContent(rightCol.blocks, 'core/paragraph')?.content || '';
@@ -106,30 +106,41 @@ export default async function Home() {
     }
   }
 
-  // --- 3. WHY CHOOSE US SECTION ---
+  // --- 3. SECCIÓN POR QUÉ ELEGIRNOS ---
   const chooseGroup = pageData.gutenberg_structure.find(
     block => block.type === 'core/group' && block.attributes.metadata?.name === 'Elegirnos'
   );
 
   let chooseData = {
     title: '',
-    features: [] as { iconUrl: string; title: string; description: string }[]
+    backgroundImage: '',
+    features: [] as { iconUrl: string; title: string; description: string; name: string }[]
   };
 
   if (chooseGroup && chooseGroup.blocks) {
+    // Extraer imagen de fondo (primer bloque de tipo core/image en el grupo principal)
+    const bgImageBlock = chooseGroup.blocks.find(b => b.type === 'core/image');
+    if (bgImageBlock) {
+      chooseData.backgroundImage = bgImageBlock.url || '';
+    }
+
+    // Extraer título principal
     chooseData.title = getBlockContent(chooseGroup.blocks, 'core/heading')?.content || '';
 
-    // Find all nested groups (satisfaccion, pago, etc)
+    // Encontrar todos los grupos anidados (satisfaccion, pago, gestion, servicio, soluciones, entrega)
     const featureGroups = chooseGroup.blocks.filter(b => b.type === 'core/group');
 
     chooseData.features = featureGroups.map(grp => {
-      if (!grp.blocks) return { iconUrl: '', title: '', description: '' };
+      // Extraer el nombre de metadatos para el diseño de la cuadrícula
+      const name = grp.attributes?.metadata?.name || '';
+
+      if (!grp.blocks) return { iconUrl: '', title: '', description: '', name };
 
       const icon = getBlockContent(grp.blocks, 'core/image')?.url || '';
       const title = getBlockContent(grp.blocks, 'core/heading')?.content || '';
       const desc = getBlockContent(grp.blocks, 'core/paragraph')?.content || '';
 
-      return { iconUrl: icon, title, description: desc };
+      return { iconUrl: icon, title, description: desc, name };
     });
   }
 
@@ -138,7 +149,7 @@ export default async function Home() {
     <>
       <Hero {...heroData} />
       <ControlTotal {...controlData} />
-      <WhyChooseUs {...chooseData} />
+      <Elegirnos {...chooseData} />
     </>
   );
 }

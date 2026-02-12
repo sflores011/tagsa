@@ -1,4 +1,4 @@
-import { HeaderData, PageData } from "@/types";
+import { HeaderData, PageData, FooterData } from "@/types";
 
 const site = process.env.WP_SITE_URL;
 
@@ -56,6 +56,17 @@ export async function getHomePageData(): Promise<PageData | null> {
         });
     } catch (error) {
         console.error("Error fetching home page data:", error);
+        return null;
+    }
+}
+
+export async function getFooterData(): Promise<FooterData | null> {
+    try {
+        return await gutenbergApi<FooterData>("/footer", {
+            next: { revalidate: 3600 }
+        });
+    } catch (error) {
+        console.error("Error fetching footer data:", error);
         return null;
     }
 }

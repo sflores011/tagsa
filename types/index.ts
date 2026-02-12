@@ -98,3 +98,56 @@ export interface PageData {
     gutenberg_structure: Block[];
     sections: Section[];
 }
+
+export interface SocialNetwork {
+    platform: string;
+    url: string;
+    icon?: string;
+}
+
+export interface FooterBlock {
+    type: string;
+    attributes?: any;
+    content?: string;
+    children?: FooterBlock[];
+    image?: {
+        id: number;
+        url: string;
+        alt: string;
+        width: number;
+        height: number;
+    };
+}
+
+export interface FooterData {
+    site_info: {
+        name: string;
+        description: string;
+        url: string;
+        year: string;
+    };
+    logo: WpImage & { has_logo: boolean };
+    copyright: {
+        text: string;
+        year: string;
+        site_name: string;
+    };
+    social_networks: {
+        networks: SocialNetwork[];
+        count: number;
+    };
+    menu: {
+        exists: boolean;
+        items: MenuItem[];
+        item_count: number;
+        message?: string;
+    };
+    widgets: {
+        areas: any[];
+        count: number;
+    };
+    content: {
+        is_block_theme: boolean;
+        blocks: FooterBlock[];
+    };
+}

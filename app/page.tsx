@@ -1,7 +1,9 @@
 import Hero from '@/components/home/Hero';
 import ControlTotal from '@/components/home/ControlTotal';
 import Elegirnos from '@/components/home/Elegirnos';
-import { getHomePageData } from '@/lib/wordpress';
+import Proceso from '@/components/home/Proceso';
+/* import Testimonios from '@/components/home/Testimonios';
+ */import { getHomePageData } from '@/lib/wordpress';
 import { PageData, Block } from '@/types';
 
 // Función auxiliar para extraer contenido de forma segura
@@ -144,12 +146,81 @@ export default async function Home() {
     });
   }
 
+  // --- 4. SECCIÓN PROCESO ---
+  const procesoGroup = pageData.gutenberg_structure.find(
+    block => block.type === 'core/group' && block.attributes.metadata?.name === 'Proceso'
+  );
+
+  let procesoData = {
+    title: '',
+    coverImage: '',
+    pasos: [] as { number: string; description: string; title: string; name: string }[]
+  };
+
+  if (procesoGroup && procesoGroup.blocks) {
+    // Buscar bloque cover principal para imagen y título
+    const coverBlock = procesoGroup.blocks.find(b => b.type === 'core/cover');
+    if (coverBlock) {
+      procesoData.coverImage = coverBlock.attributes?.url || '';
+      const innerHeading = coverBlock.blocks?.find(b => b.type === 'core/heading');
+      procesoData.title = innerHeading?.content || '';
+    } else {
+      // Fallback: buscar imagen y título como bloques directos
+      const imgBlock = getBlockContent(procesoGroup.blocks, 'core/image');
+      procesoData.coverImage = imgBlock?.url || '';
+
+      const headingBlock = getBlockContent(procesoGroup.blocks, 'core/heading');
+      procesoData.title = headingBlock?.content || '';
+    }
+
+    const pasoGroups = procesoGroup.blocks.filter(b => b.type === 'core/group');
+    procesoData.pasos = pasoGroups.map(grp => {
+      const name = grp.attributes?.metadata?.name || '';
+      if (!grp.blocks) return { number: '', description: '', title: '', name };
+
+      const headings = grp.blocks.filter(b => b.type === 'core/heading');
+      const number = headings.length > 0 ? (headings[0].content || '') : '';
+      const title = headings.length > 1 ? (headings[1].content || '') : '';
+      const description = getBlockContent(grp.blocks, 'core/paragraph')?.content || '';
+
+      return { number, title, description, name };
+    });
+  }
+
+  /*   // --- 5. SECCIÓN TESTIMONIOS ---
+    const testimoniosGroup = pageData.gutenberg_structure.find(
+      block => block.type === 'core/group' && block.attributes.metadata?.name === 'Testimonios'
+    );
+  
+    let testimoniosData = {
+      heading: '',
+      testimonios: [] as { content: string; author: string; position: string }[]
+    };
+  
+    if (testimoniosGroup && testimoniosGroup.blocks) {
+      testimoniosData.heading = getBlockContent(testimoniosGroup.blocks, 'core/heading')?.content || '';
+  
+      const testGroups = testimoniosGroup.blocks.filter(b => b.type === 'core/group');
+      testimoniosData.testimonios = testGroups.map(grp => {
+        if (!grp.blocks) return { content: '', author: '', position: '' };
+  
+        const paragraphs = grp.blocks.filter(b => b.type === 'core/paragraph');
+        const content = paragraphs.length > 0 ? (paragraphs[0].content || '') : '';
+        const position = paragraphs.length > 1 ? (paragraphs[1].content || '') : '';
+        const author = getBlockContent(grp.blocks, 'core/heading')?.content || '';
+  
+        return { content, author, position };
+      });
+    } */
+
 
   return (
     <>
       <Hero {...heroData} />
       <ControlTotal {...controlData} />
       <Elegirnos {...chooseData} />
+      <Proceso {...procesoData} />
+      {/* <Testimonios {...testimoniosData} /> */}
     </>
   );
 }

@@ -14,7 +14,8 @@ interface ElegirnosProps {
 }
 
 export default function Elegirnos({ title, backgroundImage, features }: ElegirnosProps) {
-
+    // Definir el orden requerido para que el diseño de cuadrícula funcione correctamente
+    // Diseño de cuadrícula: 4 columnas
     const order = ['satisfaccion', 'pago', 'soluciones', 'gestion', 'servicio', 'entrega'];
 
     // Ordenar las características según el orden definido
@@ -25,90 +26,103 @@ export default function Elegirnos({ title, backgroundImage, features }: Elegirno
     const finalFeatures = [...sortedFeatures, ...remainingFeatures];
 
     return (
-        <section className="relative py-20 overflow-hidden min-h-[800px] flex items-center">
-            {/* Imagen de fondo con superposición */}
+        <section className="relative w-full lg:min-h-[85vh] flex items-center justify-center overflow-hidden py-15">
+            {/* 1. Fondo Full Bleed con Overlay */}
             <div className="absolute inset-0 z-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                     src={backgroundImage}
                     alt="Fondo"
                     className="w-full h-full object-cover"
-                    style={{
-                        boxShadow: '0px 4px 4px 0px #00000040'
-                    }}
                 />
-                {/* Superposición de degradado con especificaciones exactas */}
+
+                {/* Sombra sobre la imagen de fondo (Overlay oscuro sutil) */}
+                {/* <div className="absolute inset-0 bg-black/20" /> */}
+
+                {/* Superposición de degradado específico solicitado */}
                 <div
-                    className="absolute inset-0"
-                    style={{
-                        background: 'linear-gradient(0deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.03)), linear-gradient(0deg, rgba(3, 97, 180, 0.46), rgba(3, 97, 180, 0.46))',
-                        backgroundBlendMode: 'multiply'
-                    }}
+                    className="absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,0.03),rgba(0,0,0,0.03)),linear-gradient(0deg,rgba(3,97,180,0.46),rgba(3,97,180,0.46))]
+      mix-blend-multiply
+      pointer-events-none"
                 />
             </div>
 
-            <div className="container mx-auto px-4 relative z-10">
-                {/* Título principal */}
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-['Benn'] font-bold text-center text-white mb-16 uppercase tracking-wider">
+            <div className="container mx-auto relative z-10 w-full max-w-[1200px]">
+                {/* 2. Título "Tech/Condensada" */}
+                <h2 className="text-4xl md:text-5xl lg:text-[45px] font-['Benn'] font-bold text-center text-white mb-10 uppercase tracking-[0.1em] italic">
                     {title}
                 </h2>
 
-                {/* Contenedor de cuadrícula */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
+                {/* 3. Grid Layout Exacto (Desktop lg+) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-[250px] ">
                     {finalFeatures.map((feature, index) => {
-                        const isSatisfaccion = feature.name === 'satisfaccion';
-                        const isPago = feature.name === 'pago';
+                        const name = feature.name;
 
-                        // Calcular clases basadas en el tipo de característica
-                        let gridClasses = 'col-span-1';
-                        if (isSatisfaccion) gridClasses = 'lg:row-span-2 lg:col-span-1 md:row-span-2';
-                        if (isPago) gridClasses = 'lg:col-span-2 md:col-span-2';
+                        // Configuración por tarjeta
+                        let gridClasses = 'col-span-1 row-span-1'; // Default
+                        let cardStyleClass = 'glass-card'; // Default style
+
+                        // A) Izquierda: Satisfacción (Alta)
+                        if (name === 'satisfaccion') {
+                            gridClasses = 'lg:row-span-2 lg:col-span-1 md:row-span-2';
+                        }
+
+                        // B) Fila superior centro: Pago (Ancha)
+                        if (name === 'pago') {
+                            gridClasses = 'lg:col-span-2 md:col-span-2';
+                            cardStyleClass = 'glass-card glass-card-blur-center';
+                        }
+
+                        // C) Soluciones (1x1 default) - top right
+                        // D) Gestión e informes (Azul intenso)
+                        if (name === 'gestion') {
+                            cardStyleClass = 'glass-card-blue';
+                        }
+
+                        // E) Servicio 24/7 (Azul intenso)
+                        if (name === 'servicio') {
+                            cardStyleClass = 'glass-card-blue';
+                        }
+
+                        // F) Entrega (Default glass) - bottom right
 
                         return (
                             <div
                                 key={index}
                                 className={`
                                     ${gridClasses}
-                                    backdrop-blur-md border border-white/20 
-                                    rounded-[20px] p-8 
+                                    ${cardStyleClass}
+                                    backdrop-blur-sm
+                                    rounded-[24px] p-8
                                     flex flex-col justify-end
+                                    transition-all duration-300 hover:scale-[1.01]
+                                    relative overflow-hidden group
                                 `}
-                                style={{
-                                    background: '#FFFFFF40',
-                                    backgroundBlendMode: 'overlay'
-                                }}
                             >
-                                <div>
-                                    {/* Icono */}
-                                    <div className="mb-6 w-[40px] h-[40px]">
+                                {/* Overlay interno sutil para profundidad */}
+                                <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-black/10 pointer-events-none " />
+
+                                <div className="relative z-10 flex flex-col items-start">
+                                    {/* Icono Menta/Aqua - Ahora junto al texto */}
+                                    <div className="w-8 h-8 mb-4">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
                                             src={feature.iconUrl}
                                             alt={feature.title}
-                                            className="w-full h-full object-contain"
-                                            style={{
-                                                filter: 'brightness(0) saturate(100%) invert(87%) sepia(26%) saturate(1528%) hue-rotate(125deg) brightness(103%) contrast(101%)'
-                                            }}
+                                            className="w-full h-full object-contain icon-mint"
                                         />
                                     </div>
 
-                                    {/* Título */}
-                                    <h3 className="font-['FamiliarPro'] font-bold text-[22px] text-white mb-4 leading-tight">
+                                    {/* Título Blanco Bold */}
+                                    <h3 className="font-['FamiliarPro'] font-bold text-[22px] text-white mb-3 leading-tight tracking-wide">
                                         {feature.title}
                                     </h3>
 
-                                    {/* Descripción */}
-                                    <p className="font-['FamiliarPro'] text-white/80 text-base leading-relaxed">
+                                    {/* Descripción Blanco Opacidad */}
+                                    <p className="font-['FamiliarPro'] text-white/80 text-[15px] leading-relaxed font-normal">
                                         {feature.description}
                                     </p>
                                 </div>
-
-                                {/* Decorador para Satisfacción (Estrella) si es necesario, o solo alineación inferior */}
-                                {isSatisfaccion && (
-                                    <div className="mt-8">
-                                        {/* Decoración interna opcional podría ir aquí */}
-                                    </div>
-                                )}
                             </div>
                         );
                     })}

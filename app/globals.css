@@ -23,3 +23,35 @@ body {
   font-family: 'FamiliarPro', sans-serif;
   font-weight: 400;
 }
+
+/* Custom Glassmorphism Utilities */
+@layer utilities {
+  .glass-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
+  }
+
+  .glass-card-blue {
+    background: linear-gradient(180deg, rgba(3, 97, 180, 0.6) 0%, rgba(3, 97, 180, 0.4) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.3);
+  }
+  
+  .glass-card-blur-center {
+     backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  .text-shadow-title {
+    text-shadow: 0px 4px 10px rgba(0, 0, 0, 0.6);
+  }
+  
+  .icon-mint {
+    filter: brightness(0) saturate(100%) invert(86%) sepia(21%) saturate(1054%) hue-rotate(127deg) brightness(98%) contrast(95%);
+  }
+}

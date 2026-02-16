@@ -33,7 +33,7 @@ export default function Elegirnos({ title, backgroundImage, features }: Elegirno
                 />
             </div>
 
-            <div className="container mx-auto relative z-10 w-full max-w-[1200px]">
+            <div className="container mx-auto px-4 relative z-10 w-full max-w-[1200px]">
                 <h2 className="text-4xl md:text-5xl lg:text-[45px] font-['Benn'] font-bold text-center text-white mb-10 uppercase tracking-[0.1em] italic">
                     {title}
                 </h2>

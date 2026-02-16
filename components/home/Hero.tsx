@@ -16,7 +16,7 @@ import Link from 'next/link';
 
 export default function Hero({ backgroundImageUrl, title, description, buttonText, buttonUrl, stats }: HeroProps) {
     return (
-        <section className="relative w-full min-h-[125vh] flex flex-col overflow-hidden">
+        <section className="relative w-full min-h-[110vh] md:min-h-[125vh] flex flex-col overflow-hidden">
             {/* Background Image Container - Covers entire section */}
             {backgroundImageUrl && (
                 <div className="absolute inset-0 z-0">
@@ -46,23 +46,18 @@ export default function Hero({ backgroundImageUrl, title, description, buttonTex
             <div className="container mx-auto px-4 z-20 relative flex-grow flex flex-col justify-center pt-20">
                 <div className="w-full md:w-[78%] text-white">
                     <h1
-                        className="uppercase tracking-wider mb-6 leading-none drop-shadow-lg"
-                        style={{
-                            fontFamily: 'Benn, sans-serif',
-                            fontWeight: 400,
-                            fontSize: '70px'
-                        }}
+                        className="font-[Benn] font-normal text-[50px] md:text-[70px] uppercase tracking-wider mb-6 leading-none"
                     >
                         {title}
                     </h1>
-                    <p className="mb-8 text-white leading-relaxed drop-shadow-md max-w-[88%] text-[25px] font-normal">
+                    <p className="mb-8 text-white leading-relaxed max-w-[88%] text-[25px] font-normal">
                         {description}
                     </p>
 
                     {buttonText && (
                         <Link
                             href={buttonUrl || '#'}
-                            className="inline-block bg-white text-black font-bold py-3 px-8 rounded-[15px] shadow-lg hover:bg-[#0361B4] hover:text-white transition-transform transform"
+                            className="inline-block bg-white text-black font-bold py-3 px-8 rounded-[15px] hover:bg-[#0361B4] hover:text-white transition-transform transform"
                         >
                             {buttonText}
                         </Link>

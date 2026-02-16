@@ -47,9 +47,9 @@ export default function Elegirnos({ title, backgroundImage, features }: Elegirno
                 />
             </div>
 
-            <div className="container mx-auto relative z-10 w-full max-w-[1200px]">
+            <div className="container mx-auto px-4 relative z-10 w-full max-w-[1200px]">
                 {/* 2. Título "Tech/Condensada" */}
-                <h2 className="text-4xl md:text-5xl lg:text-[45px] font-['Benn'] font-bold text-center text-white mb-10 uppercase tracking-[0.1em] italic">
+                <h2 className="text-4xl md:text-5xl lg:text-[45px] font-['Benn'] font-normal text-center text-white mb-10 uppercase tracking-[0.1em] italic">
                     {title}
                 </h2>
 
@@ -76,12 +76,12 @@ export default function Elegirnos({ title, backgroundImage, features }: Elegirno
                         // C) Soluciones (1x1 default) - top right
                         // D) Gestión e informes (Azul intenso)
                         if (name === 'gestion') {
-                            cardStyleClass = 'glass-card-blue';
+                            cardStyleClass = 'glass-card';
                         }
 
                         // E) Servicio 24/7 (Azul intenso)
                         if (name === 'servicio') {
-                            cardStyleClass = 'glass-card-blue';
+                            cardStyleClass = 'glass-card';
                         }
 
                         // F) Entrega (Default glass) - bottom right

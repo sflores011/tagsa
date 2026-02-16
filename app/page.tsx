@@ -2,8 +2,8 @@ import Hero from '@/components/home/Hero';
 import ControlTotal from '@/components/home/ControlTotal';
 import Elegirnos from '@/components/home/Elegirnos';
 import Proceso from '@/components/home/Proceso';
-/* import Testimonios from '@/components/home/Testimonios';
- */import { getHomePageData } from '@/lib/wordpress';
+import Testimonios from '@/components/home/Testimonios';
+import { getHomePageData } from '@/lib/wordpress';
 import { PageData, Block } from '@/types';
 
 // Función auxiliar para extraer contenido de forma segura
@@ -187,31 +187,91 @@ export default async function Home() {
     });
   }
 
-  /*   // --- 5. SECCIÓN TESTIMONIOS ---
-    const testimoniosGroup = pageData.gutenberg_structure.find(
-      block => block.type === 'core/group' && block.attributes.metadata?.name === 'Testimonios'
+  // --- 5. SECCIÓN TESTIMONIOS ---
+  const testimoniosGroup = pageData.gutenberg_structure.find(
+    block => block.type === 'core/group' && block.attributes.metadata?.name === 'Testimonios'
+  );
+
+  let testimoniosData = {
+    heading: '',
+    testimonios: [] as { content: string; author: string; position: string; logo: string; mediaLink: string; blocks: Block[] }[]
+  };
+
+  if (testimoniosGroup && testimoniosGroup.blocks) {
+    testimoniosData.heading = getBlockContent(testimoniosGroup.blocks, 'core/heading')?.content || '';
+
+    // Buscar el grupo carrusel anidado
+    const carouselGroup = testimoniosGroup.blocks.find(
+      block => block.type === 'core/group' && block.attributes.metadata?.name === 'testimoniosCarousel'
     );
-  
-    let testimoniosData = {
-      heading: '',
-      testimonios: [] as { content: string; author: string; position: string }[]
-    };
-  
-    if (testimoniosGroup && testimoniosGroup.blocks) {
-      testimoniosData.heading = getBlockContent(testimoniosGroup.blocks, 'core/heading')?.content || '';
-  
-      const testGroups = testimoniosGroup.blocks.filter(b => b.type === 'core/group');
+
+    // Usar los bloques del carrusel si existe, de lo contrario buscar grupos directos (fallback)
+    const testimonialBlocks = carouselGroup ? carouselGroup.blocks : testimoniosGroup.blocks;
+
+    if (testimonialBlocks) {
+      const testGroups = testimonialBlocks.filter(b => b.type === 'core/group' && b.attributes?.metadata?.name?.startsWith('testimonio'));
+
       testimoniosData.testimonios = testGroups.map(grp => {
-        if (!grp.blocks) return { content: '', author: '', position: '' };
-  
-        const paragraphs = grp.blocks.filter(b => b.type === 'core/paragraph');
-        const content = paragraphs.length > 0 ? (paragraphs[0].content || '') : '';
-        const position = paragraphs.length > 1 ? (paragraphs[1].content || '') : '';
-        const author = getBlockContent(grp.blocks, 'core/heading')?.content || '';
-  
-        return { content, author, position };
+        if (!grp.blocks) return { content: '', author: '', position: '', logo: '', mediaLink: '', blocks: [] };
+
+        // 1. Contenido principal (grupo contenido_testimonio -> párrafos)
+        const contentGroup = grp.blocks.find(
+          b => b.type === 'core/group' && b.attributes?.metadata?.name === 'contenido_testimonio'
+        );
+
+        const contentParagraphs = contentGroup?.blocks
+          ?.filter(b => b.type === 'core/paragraph')
+          .map(b => b.content || '')
+          .filter(Boolean) || [];
+
+        const content = contentParagraphs.join('\n\n');
+
+        // 2. Autor y Posición (dentro de core/media-text)
+        let author = '';
+        let position = '';
+        let logo = '';
+        let mediaLink = '';
+
+        const mediaTextBlock = grp.blocks.find(b => b.type === 'core/media-text') as any;
+
+        // El endpoint usa mediaLink para el logo
+        if (typeof mediaTextBlock?.attributes?.mediaLink === 'string') {
+          mediaLink = mediaTextBlock.attributes.mediaLink;
+        }
+
+        // Fallback por compatibilidad
+        if (typeof mediaTextBlock?.attributes?.mediaUrl === 'string') {
+          logo = mediaTextBlock.attributes.mediaUrl;
+        }
+
+        if (mediaTextBlock && mediaTextBlock.content) {
+          // En este caso, content es un array de bloques, iteramos manualmente
+          const innerContent = Array.isArray(mediaTextBlock.content)
+            ? mediaTextBlock.content
+            : [];
+
+          // Buscar heading (Autor) y paragraph (Posición) dentro del media-text
+          const authorHeading = innerContent.find((b: any) =>
+            b.type === 'core/heading' && b.attributes?.metadata?.name === 'autor'
+          ) || innerContent.find((b: any) => b.type === 'core/heading');
+
+          const positionPara = innerContent.find((b: any) =>
+            b.type === 'core/paragraph' && b.attributes?.metadata?.name === 'posicion'
+          ) || innerContent.find((b: any) => b.type === 'core/paragraph');
+
+          author = authorHeading?.content || '';
+          position = positionPara?.content || '';
+        } else {
+          // Fallback: buscar heading directo en el grupo si no hay media-text
+          // (Por si acaso la estructura cambia)
+          const fallbackAuthor = getBlockContent(grp.blocks, 'core/heading');
+          if (fallbackAuthor) author = fallbackAuthor.content || '';
+        }
+
+        return { content, author, position, logo, mediaLink, blocks: grp.blocks };
       });
-    } */
+    }
+  }
 
 
   return (
@@ -220,7 +280,7 @@ export default async function Home() {
       <ControlTotal {...controlData} />
       <Elegirnos {...chooseData} />
       <Proceso {...procesoData} />
-      {/* <Testimonios {...testimoniosData} /> */}
+      <Testimonios {...testimoniosData} />
     </>
   );
 }

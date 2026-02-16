@@ -22,3 +22,14 @@ export async function getHomePageData(): Promise<PageData | null> {
         return null;
     }
 }
+
+export async function getPageDataBySlug(slug: string): Promise<PageData | null> {
+    try {
+        return await gutenbergApi<PageData>(`/pages/${slug}`, {
+            next: { revalidate: 3600 }
+        });
+    } catch (error) {
+        console.error(`Error fetching page data for slug "${slug}":`, error);
+        return null;
+    }
+}

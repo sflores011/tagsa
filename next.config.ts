@@ -1,7 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "tagsa.aumenta.do",
+      },
+      {
+        protocol: "https",
+        hostname: "tagsa.aumenta.do",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

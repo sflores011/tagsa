@@ -76,16 +76,25 @@ export default function ContactFormPanel() {
       let invalidFields: Cf7InvalidField[] = [];
 
       if (typeof error === "object" && error !== null) {
-        const apiError = error as {
+        const apiError = error as Error & {
           message?: string;
           invalid_fields?: Cf7InvalidField[];
+          cf7?: {
+            message?: string;
+            invalid_fields?: Cf7InvalidField[];
+          };
         };
 
-        if (typeof apiError.message === "string") {
+        if (typeof apiError.cf7?.message === "string") {
+          message = apiError.cf7.message;
+        } else if (typeof apiError.message === "string") {
           message = apiError.message;
         }
+
         if (Array.isArray(apiError.invalid_fields)) {
           invalidFields = apiError.invalid_fields;
+        } else if (Array.isArray(apiError.cf7?.invalid_fields)) {
+          invalidFields = apiError.cf7.invalid_fields;
         }
       }
 

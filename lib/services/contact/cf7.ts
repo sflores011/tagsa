@@ -13,6 +13,7 @@ export type Cf7InvalidField = {
 };
 
 export type Cf7Response = {
+  code?: string;
   contact_form_id: number;
   status: string;
   message: string;
@@ -29,7 +30,9 @@ function requiredEnv(name: string, fallback?: string): string {
   return value;
 }
 
-export async function sendContactToCf7(values: ContactPayload): Promise<Cf7Response> {
+export async function sendContactToCf7(
+  values: ContactPayload,
+): Promise<Cf7Response> {
   const endpoint = requiredEnv(
     "NEXT_PUBLIC_CF7_FEEDBACK_URL",
     "https://tagsa.aumenta.do/wp-json/contact-form-7/v1/contact-forms/101/feedback",
@@ -41,32 +44,51 @@ export async function sendContactToCf7(values: ContactPayload): Promise<Cf7Respo
   const unitTag = requiredEnv("NEXT_PUBLIC_CF7_UNIT_TAG", "wpcf7-f101-p0-o1");
   const containerPost = requiredEnv("NEXT_PUBLIC_CF7_CONTAINER_POST", "38");
 
-  const body = new URLSearchParams({
-    "full-name": values.fullName,
-    email: values.email,
-    "tel-546": values.tel,
-    subject: values.subject,
-    message: values.message ?? "",
-    _wpcf7: formId,
-    _wpcf7_version: formVersion,
-    _wpcf_locale: locale,
-    _wpcf7_unit_tag: unitTag,
-    _wpcf7_container_post: containerPost,
-  });
+  const fd = new FormData();
+
+  // Campos CF7
+  fd.set("full-name", values.fullName);
+  fd.set("email", values.email);
+  fd.set("tel-546", values.tel);
+  fd.set("subject", values.subject);
+  fd.set("message", values.message ?? "");
+
+  // Meta CF7
+  fd.set("_wpcf7", formId);
+  fd.set("_wpcf7_version", formVersion);
+  fd.set("_wpcf_locale", locale);
+  fd.set("_wpcf7_unit_tag", unitTag);
+  fd.set("_wpcf7_container_post", containerPost);
 
   const response = await fetch(endpoint, {
     method: "POST",
+    // 👇 NO pongas Content-Type aquí.
+    // El navegador pone multipart/form-data con boundary correcto.
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
       Accept: "application/json",
     },
-    body,
+    body: fd,
   });
 
-  const data = (await response.json()) as Cf7Response;
+  const raw = await response.text();
+  let data: Cf7Response;
+  try {
+    data = JSON.parse(raw) as Cf7Response;
+  } catch {
+    data = {
+      contact_form_id: Number(formId),
+      status: "error",
+      message: raw || "Unexpected response from CF7",
+    };
+  }
 
   if (!response.ok) {
-    throw data;
+    const error = new Error(
+      `CF7 error ${response.status} ${response.statusText}: ${data?.message ?? raw}`,
+    ) as Error & { status: number; cf7: Cf7Response };
+    error.status = response.status;
+    error.cf7 = data;
+    throw error;
   }
 
   return data;
